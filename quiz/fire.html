@@ -78,14 +78,12 @@
             transform: translateY(-2px);
         }
 
-        .btn-reset {
-            background: #4ecdc4;
-            box-shadow: 0 4px 10px rgba(78, 205, 196, 0.3);
-        }
-
-        .btn-reset:hover {
-            background: #39bda7;
-            transform: translateY(-2px);
+        .btn-start:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+            opacity: 0.6;
         }
 
         .stats-panel {
@@ -214,8 +212,7 @@
         <div class="game-header">
             <div class="game-title">🧠 Logic Speed Test</div>
             <div class="header-btns">
-                <button onclick="startTrueFalseGame()" class="btn-action btn-start">⚡ Quick Start</button>
-                <button onclick="resetTrueFalseGame()" class="btn-action btn-reset">🔄 Reset</button>
+                <button id="btnStart" onclick="startTrueFalseGame()" class="btn-action btn-start">⚡ Mulai</button>
             </div>
         </div>
 
@@ -242,8 +239,8 @@
             </div>
 
             <div id="tfButtons" class="btn-options-container" style="display: none;">
-                <button onclick="answerTrueFalse(true)" class="btn-opt btn-true">✅ TRUE</button>
-                <button onclick="answerTrueFalse(false)" class="btn-opt btn-false">❌ FALSE</button>
+                <button id="btnTrue" onclick="answerTrueFalse(true)" class="btn-opt btn-true">✅ TRUE</button>
+                <button id="btnFalse" onclick="answerTrueFalse(false)" class="btn-opt btn-false">❌ FALSE</button>
             </div>
 
             <div id="tfResult" class="feedback-toast"></div>
@@ -257,16 +254,7 @@
     </div>
 
     <script>
-        let tfGameState = {
-            streak: 0,
-            maxStreak: 0,
-            totalCorrect: 0,
-            questionCount: 0,
-            timeLeft: 10,
-            timer: null,
-            gameActive: false,
-            questionStartTime: 0
-        };
+        const STORAGE_KEY = 'quick_fire_game_state';
 
         const trueFalseStatements = [
             { statement: "Dalam Python, elif akan dieksekusi meskipun kondisi if sebelumnya sudah True", answer: false },
@@ -286,80 +274,106 @@
             { statement: "Business rules sebaiknya di-hardcode dalam logic flow untuk efficiency", answer: false }
         ];
 
-        let shuffledStatements = [];
+        let tfGameState = {
+            streak: 0,
+            maxStreak: 0,
+            totalCorrect: 0,
+            questionCount: 0,
+            timeLeft: 10,
+            timer: null,
+            gameActive: false,
+            endTime: 0,
+            shuffledStatements: []
+        };
+
+        function saveToLocalStorage() {
+            const dataToSave = {
+                streak: tfGameState.streak,
+                maxStreak: tfGameState.maxStreak,
+                totalCorrect: tfGameState.totalCorrect,
+                questionCount: tfGameState.questionCount,
+                gameActive: tfGameState.gameActive,
+                endTime: tfGameState.endTime,
+                shuffledStatements: tfGameState.shuffledStatements
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+        }
+
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                tfGameState.streak = parsed.streak || 0;
+                tfGameState.maxStreak = parsed.maxStreak || 0;
+                tfGameState.totalCorrect = parsed.totalCorrect || 0;
+                tfGameState.questionCount = parsed.questionCount || 0;
+                tfGameState.gameActive = parsed.gameActive || false;
+                tfGameState.endTime = parsed.endTime || 0;
+                tfGameState.shuffledStatements = parsed.shuffledStatements || [];
+                return true;
+            }
+            return false;
+        }
 
         function startTrueFalseGame() {
-            shuffledStatements = [...trueFalseStatements].sort(() => Math.random() - 0.5);
+            if (tfGameState.gameActive) return;
 
-            tfGameState = {
-                streak: 0,
-                maxStreak: 0,
-                totalCorrect: 0,
-                questionCount: 0,
-                timeLeft: 10,
-                timer: null,
-                gameActive: true,
-                questionStartTime: Date.now()
-            };
+            // Pengacakan soal dilakukan hanya sekali di sini saat tombol Mulai diklik
+            tfGameState.shuffledStatements = [...trueFalseStatements].sort(() => Math.random() - 0.5);
+            tfGameState.streak = 0;
+            tfGameState.maxStreak = 0;
+            tfGameState.totalCorrect = 0;
+            tfGameState.questionCount = 0;
+            tfGameState.gameActive = true;
+
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('tfStats').style.display = 'none';
 
             updateTFDisplay();
-            document.getElementById('tfStats').style.display = 'none';
+            saveToLocalStorage();
             loadNextStatement();
         }
 
-        function resetTrueFalseGame() {
-            clearInterval(tfGameState.timer);
-            tfGameState = {
-                streak: 0,
-                maxStreak: 0,
-                totalCorrect: 0,
-                questionCount: 0,
-                timeLeft: 10,
-                timer: null,
-                gameActive: false,
-                questionStartTime: 0
-            };
-
-            updateTFDisplay();
-
-            document.getElementById('tfStatement').innerHTML = `
-        🔥 Uji kemampuan decision logic Anda!<br><br>
-        Anda memiliki 10 detik untuk tiap pernyataan.<br>
-        Cepat & akurat = streak tinggi! 🚀
-      `;
-            document.getElementById('tfButtons').style.display = 'none';
-            document.getElementById('tfResult').style.display = 'none';
-            document.getElementById('tfStats').style.display = 'none';
-        }
-
         function loadNextStatement() {
-            if (tfGameState.questionCount >= shuffledStatements.length) {
+            if (tfGameState.questionCount >= tfGameState.shuffledStatements.length) {
                 endTrueFalseGame();
                 return;
             }
 
-            const statement = shuffledStatements[tfGameState.questionCount];
-            tfGameState.questionStartTime = Date.now();
-            tfGameState.timeLeft = 10;
+            const statement = tfGameState.shuffledStatements[tfGameState.questionCount];
+
+            if (!tfGameState.endTime || tfGameState.endTime <= Date.now()) {
+                tfGameState.endTime = Date.now() + 10000;
+            }
+
+            tfGameState.timeLeft = Math.round((tfGameState.endTime - Date.now()) / 1000);
 
             document.getElementById('tfStatement').innerHTML = `
-        <div style="color: #ffd93d; font-size: 0.85em; margin-bottom: 12px; letter-spacing: 1px; text-transform: uppercase;">
-          Statement #${tfGameState.questionCount + 1}
-        </div>
-        ${statement.statement}
-      `;
+                <div style="color: #ffd93d; font-size: 0.85em; margin-bottom: 12px; letter-spacing: 1px; text-transform: uppercase;">
+                    Statement #${tfGameState.questionCount + 1}
+                </div>
+                ${statement.statement}
+            `;
 
             document.getElementById('tfButtons').style.display = 'flex';
             document.getElementById('tfResult').style.display = 'none';
 
+            updateTFDisplay();
+            saveToLocalStorage();
             startCountdown();
         }
 
         function startCountdown() {
             clearInterval(tfGameState.timer);
+
+            if (tfGameState.timeLeft <= 0) {
+                answerTrueFalse(null);
+                return;
+            }
+
             tfGameState.timer = setInterval(() => {
-                tfGameState.timeLeft--;
-                document.getElementById('tfTimer').textContent = tfGameState.timeLeft;
+                tfGameState.timeLeft = Math.round((tfGameState.endTime - Date.now()) / 1000);
+                document.getElementById('tfTimer').textContent = Math.max(tfGameState.timeLeft, 0);
 
                 if (tfGameState.timeLeft <= 0) {
                     clearInterval(tfGameState.timer);
@@ -370,7 +384,7 @@
 
         function answerTrueFalse(answer) {
             clearInterval(tfGameState.timer);
-            const statement = shuffledStatements[tfGameState.questionCount];
+            const statement = tfGameState.shuffledStatements[tfGameState.questionCount];
             const correct = (answer === statement.answer);
 
             document.querySelectorAll('#tfButtons button').forEach(btn => btn.disabled = true);
@@ -394,7 +408,9 @@
             }
 
             tfGameState.questionCount++;
+            tfGameState.endTime = 0;
             updateTFDisplay();
+            saveToLocalStorage();
 
             setTimeout(() => {
                 document.querySelectorAll('#tfButtons button').forEach(btn => btn.disabled = false);
@@ -404,17 +420,19 @@
 
         function updateTFDisplay() {
             document.getElementById('tfStreak').textContent = tfGameState.streak;
-            document.getElementById('tfQuestion').textContent = tfGameState.questionCount + 1;
-            document.getElementById('tfTimer').textContent = tfGameState.timeLeft;
+            document.getElementById('tfQuestion').textContent = Math.min(tfGameState.questionCount + 1, tfGameState.shuffledStatements.length || 1);
+            document.getElementById('tfTimer').textContent = Math.max(tfGameState.timeLeft, 0);
         }
 
         function endTrueFalseGame() {
-            const avgTime = tfGameState.totalCorrect > 0 ?
-                (10 - (Date.now() - tfGameState.questionStartTime) / 1000 / tfGameState.questionCount).toFixed(1) : 0;
+            clearInterval(tfGameState.timer);
+            tfGameState.gameActive = false;
+            tfGameState.endTime = 0;
+            saveToLocalStorage();
 
             document.getElementById('maxStreak').textContent = tfGameState.maxStreak;
             document.getElementById('totalCorrect').textContent = tfGameState.totalCorrect;
-            document.getElementById('avgSpeed').textContent = avgTime;
+            document.getElementById('avgSpeed').textContent = "---";
 
             let msg = '';
             if (tfGameState.maxStreak >= 10) msg = '🏆 Logic Master! Streak yang luar biasa!';
@@ -423,16 +441,31 @@
             else msg = '💪 Terus belajar! Latihan membuat sempurna.';
 
             document.getElementById('tfStatement').innerHTML = `
-        <div style="font-size: 1.5em; margin-bottom: 10px;">🎊 Game Selesai!</div>
-        ${msg}<br><br>
-        <strong>Max Streak:</strong> ${tfGameState.maxStreak} | <strong>Akurasi:</strong> ${Math.round((tfGameState.totalCorrect / tfGameState.questionCount) * 100)}%
-      `;
+                <div style="font-size: 1.5em; margin-bottom: 10px;">🎊 Game Selesai!</div>
+                ${msg}<br><br>
+                <strong>Max Streak:</strong> ${tfGameState.maxStreak} | <strong>Akurasi:</strong> ${Math.round((tfGameState.totalCorrect / tfGameState.shuffledStatements.length) * 100)}%
+            `;
 
             document.getElementById('tfButtons').style.display = 'none';
             document.getElementById('tfResult').style.display = 'none';
             document.getElementById('tfStats').style.display = 'block';
-            tfGameState.gameActive = false;
+            document.getElementById('btnStart').disabled = true;
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const hasSavedData = loadFromLocalStorage();
+
+            if (hasSavedData && tfGameState.gameActive) {
+                document.getElementById('btnStart').disabled = true;
+                if (tfGameState.questionCount >= tfGameState.shuffledStatements.length) {
+                    endTrueFalseGame();
+                } else {
+                    loadNextStatement();
+                }
+            } else if (hasSavedData && !tfGameState.gameActive && tfGameState.questionCount > 0) {
+                endTrueFalseGame();
+            }
+        });
     </script>
 </body>
 
