@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perbandingan Modularisasi vs Non-Modularisasi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .flow-line-vertical {
+            background: repeating-linear-gradient(to bottom,
+                    #3b82f6 0%,
+                    #3b82f6 50%,
+                    transparent 50%,
+                    transparent 100%);
+            background-size: 100% 20px;
+            animation: flow-v 1s linear infinite;
+        }
+
+        @keyframes flow-v {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 0 20px;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-white text-slate-800 font-sans min-h-screen p-6 flex flex-col items-center">
+
+    <main class="max-w-6xl w-full border-2 border-slate-200 rounded-xl p-8 bg-white shadow-sm">
+        <header class="text-center mb-8">
+            <h1 class="text-2xl font-extrabold text-slate-900 mb-2">
+                Simulasi Perbandingan Arsitektur Logika
+            </h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">
+                Lihat perbedaan kompleksitas ketika semua kriteria dicampur dalam satu tumpukan besar (Kolom Kiri)
+                dibandingkan dengan pengelompokan berbasis fungsi kecil yang modular (Kolom Kanan).
+            </p>
+        </header>
+
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+
+            <div class="border-2 border-slate-200 rounded-xl p-6 bg-slate-50 flex flex-col justify-between">
+                <div>
+                    <span
+                        class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded uppercase tracking-wider">Arsitektur
+                        1: Monolitik</span>
+                    <h3 class="font-extrabold text-slate-900 text-lg mt-2 mb-1">Tanpa Pemecahan Fungsi</h3>
+                    <p class="text-xs text-slate-500 mb-6">
+                        Semua kriteria dievaluasi dalam satu blok kondisional yang sama. Alur logika terlihat padat dan
+                        lebih sulit dipetakan.
+                    </p>
+                </div>
+
+                <div
+                    class="flex flex-col items-center justify-center min-h-[380px] bg-white border border-slate-200 rounded-xl p-4 relative overflow-hidden">
+                    <div
+                        class="z-10 bg-white border border-slate-300 px-4 py-2 rounded shadow-sm font-bold text-xs text-slate-600 text-center w-full max-w-xs mb-4">
+                        Kandidat Masuk
+                    </div>
+
+                    <div class="w-0.5 h-4 border-l-2 border-dashed border-slate-300 relative">
+                        <div id="leftFlow1" class="absolute inset-0 w-full hidden"></div>
+                    </div>
+
+                    <div id="leftConditionBlock"
+                        class="z-10 bg-white border-2 border-slate-200 p-4 rounded-xl shadow-sm max-w-sm w-full text-left transition-all duration-300">
+                        <span class="text-[10px] font-extrabold text-amber-600 uppercase mb-2 block">Evaluasi List
+                            Kriteria (1-by-1)</span>
+
+                        <div class="flex flex-col gap-1.5 font-mono text-xs select-none">
+                            <div id="leftAgeMinItem"
+                                class="border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700">
+                                1. usia &gt;= 16
+                            </div>
+                            <div id="leftAgeMaxItem"
+                                class="border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700">
+                                2. usia &lt;= 35
+                            </div>
+                            <div id="leftEduS1Item"
+                                class="border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700">
+                                3. edu == 'S1' and gpa &gt;= 3.0
+                            </div>
+                            <div id="leftEduSmaItem"
+                                class="border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700">
+                                4. or (edu == 'SMA' and gpa &gt;= 7.5)
+                            </div>
+                            <div id="leftTechAdvItem"
+                                class="border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700">
+                                5. exp &gt;= 1 and laptop == 'high'
+                            </div>
+                            <div id="leftTechBasicItem"
+                                class="border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700">
+                                6. or (exp &gt;= 1 or laptop == 'medium')
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-0.5 h-4 border-l-2 border-dashed border-slate-300 relative mt-2">
+                        <div id="leftFlow2" class="absolute inset-0 w-full hidden"></div>
+                    </div>
+
+                    <div id="leftFinalOutcomeNode"
+                        class="z-10 bg-white border-2 border-slate-200 px-4 py-3 rounded-xl shadow-sm text-center max-w-xs w-full transition-all duration-500">
+                        <div id="leftOutcomeEmoji" class="text-2xl mb-1">⏳</div>
+                        <h4 id="leftOutcomeTitle" class="font-bold text-slate-900 text-sm mb-1">Menunggu Hasil</h4>
+                        <p id="leftOutcomeDesc" class="text-[11px] text-slate-500">Evaluasi monolitik sedang berjalan.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-2 border-slate-200 rounded-xl p-6 bg-slate-50 flex flex-col justify-between">
+                <div>
+                    <span
+                        class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded uppercase tracking-wider">Arsitektur
+                        2: Modular</span>
+                    <h3 class="font-extrabold text-slate-900 text-lg mt-2 mb-1">Terbagi Menjadi Fungsi Kecil</h3>
+                    <p class="text-xs text-slate-500 mb-6">
+                        Kriteria dikelompokkan sesuai fungsinya. Klik pada kotak fungsi untuk melihat detail
+                        implementasi kode di dalamnya.
+                    </p>
+                </div>
+
+                <div
+                    class="flex flex-col items-center justify-center min-h-[380px] bg-white border border-slate-200 rounded-xl p-4 relative overflow-hidden">
+                    <div
+                        class="z-10 bg-white border border-slate-300 px-4 py-2 rounded shadow-sm font-bold text-xs text-slate-600 text-center w-full max-w-xs mb-4">
+                        Kandidat Masuk
+                    </div>
+
+                    <div class="w-0.5 h-4 border-l-2 border-dashed border-slate-300 relative">
+                        <div id="rightFlow1" class="absolute inset-0 w-full hidden"></div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 w-full max-w-sm z-10">
+
+                        <div id="rightAgeFunc" onclick="toggleExpand('codeAge')"
+                            class="bg-white border-2 border-slate-200 p-3 rounded-xl shadow-sm cursor-pointer hover:border-blue-400 transition-all duration-300 select-none">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-[10px] font-bold text-blue-600 uppercase">Fungsi 1: Usia</p>
+                                    <p id="rightAgeText" class="text-slate-800 font-bold text-xs mt-0.5">Menghitung...
+                                    </p>
+                                </div>
+                                <span id="arrow-codeAge"
+                                    class="text-slate-400 text-xs transition-transform duration-300">&#9660;</span>
+                            </div>
+                            <div id="codeAge" class="hidden mt-3 border-t border-slate-100 pt-2 text-left">
+                                <pre
+                                    class="text-[10px] bg-slate-50 p-2 rounded border border-slate-200 text-slate-600 font-mono overflow-x-auto whitespace-pre-wrap">def check_age(age):
+    if age < 16:
+        return False, "Too young"
+    elif age > 35:
+        return False, "Too old"
+    return True, "Age OK"</pre>
+                            </div>
+                        </div>
+
+                        <div id="rightAcadFunc" onclick="toggleExpand('codeAcad')"
+                            class="bg-white border-2 border-slate-200 p-3 rounded-xl shadow-sm cursor-pointer hover:border-blue-400 transition-all duration-300 select-none">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-[10px] font-bold text-blue-600 uppercase">Fungsi 2: Akademik</p>
+                                    <p id="rightAcadText" class="text-slate-800 font-bold text-xs mt-0.5">Menghitung...
+                                    </p>
+                                </div>
+                                <span id="arrow-codeAcad"
+                                    class="text-slate-400 text-xs transition-transform duration-300">&#9660;</span>
+                            </div>
+                            <div id="codeAcad" class="hidden mt-3 border-t border-slate-100 pt-2 text-left">
+                                <pre
+                                    class="text-[10px] bg-slate-50 p-2 rounded border border-slate-200 text-slate-600 font-mono overflow-x-auto whitespace-pre-wrap">def check_acad(edu, gpa):
+    if edu == "SMA" and gpa >= 7.5:
+        return True, "Valid"
+    elif edu == "S1" and gpa >= 3.0:
+        return True, "Valid"
+    return False, "Invalid"</pre>
+                            </div>
+                        </div>
+
+                        <div id="rightTechFunc" onclick="toggleExpand('codeTech')"
+                            class="bg-white border-2 border-slate-200 p-3 rounded-xl shadow-sm cursor-pointer hover:border-blue-400 transition-all duration-300 select-none">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-[10px] font-bold text-blue-600 uppercase">Fungsi 3: Teknis</p>
+                                    <p id="rightTechText" class="text-slate-800 font-bold text-xs mt-0.5">Menghitung...
+                                    </p>
+                                </div>
+                                <span id="arrow-codeTech"
+                                    class="text-slate-400 text-xs transition-transform duration-300">&#9660;</span>
+                            </div>
+                            <div id="codeTech" class="hidden mt-3 border-t border-slate-100 pt-2 text-left">
+                                <pre
+                                    class="text-[10px] bg-slate-50 p-2 rounded border border-slate-200 text-slate-600 font-mono overflow-x-auto whitespace-pre-wrap">def check_tech(exp, laptop):
+    if exp >= 1 and laptop == "high":
+        return True, "Advanced"
+    elif exp >= 1 or laptop == "medium":
+        return True, "Basic"
+    return False, "Not Ready"</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-0.5 h-6 border-l-2 border-dashed border-slate-300 relative mt-2">
+                        <div id="rightFlow2" class="absolute inset-0 w-full hidden"></div>
+                    </div>
+
+                    <div id="rightFinalOutcomeNode"
+                        class="z-10 bg-white border-2 border-slate-200 px-4 py-3 rounded-xl shadow-sm text-center max-w-xs w-full transition-all duration-500">
+                        <div id="rightOutcomeEmoji" class="text-2xl mb-1">⏳</div>
+                        <h4 id="rightOutcomeTitle" class="font-bold text-slate-900 text-sm mb-1">Menunggu Hasil</h4>
+                        <p id="rightOutcomeDesc" class="text-[11px] text-slate-500">Evaluasi modular sedang berjalan.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="border-2 border-blue-600 rounded-xl p-5 bg-white">
+            <h4 class="font-extrabold text-slate-900 text-sm mb-3">Sesuaikan Parameter Kandidat untuk Pengujian</h4>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Usia Kandidat</label>
+                    <select id="selectAge" onchange="runSimulation()"
+                        class="w-full border-2 border-slate-200 rounded-md p-2 text-xs font-semibold focus:border-blue-600 focus:outline-none bg-white">
+                        <option value="22">22 Tahun (Lolos)</option>
+                        <option value="15">15 Tahun (Gagal)</option>
+                        <option value="38">38 Tahun (Gagal)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Jenjang Pendidikan</label>
+                    <select id="selectEdu" onchange="runSimulation()"
+                        class="w-full border-2 border-slate-200 rounded-md p-2 text-xs font-semibold focus:border-blue-600 focus:outline-none bg-white">
+                        <option value="S1">S1</option>
+                        <option value="SMA">SMA</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nilai / IPK</label>
+                    <select id="selectGpa" onchange="runSimulation()"
+                        class="w-full border-2 border-slate-200 rounded-md p-2 text-xs font-semibold focus:border-blue-600 focus:outline-none bg-white">
+                        <option value="3.2">GPA 3.2 / Nilai 8.0</option>
+                        <option value="2.5">GPA 2.5 / Nilai 6.5</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Spesifikasi Laptop</label>
+                    <select id="selectLaptop" onchange="runSimulation()"
+                        class="w-full border-2 border-slate-200 rounded-md p-2 text-xs font-semibold focus:border-blue-600 focus:outline-none bg-white">
+                        <option value="high">High Spec</option>
+                        <option value="medium">Medium Spec</option>
+                        <option value="low">Low Spec</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function toggleExpand(id) {
+            const container = document.getElementById(id);
+            const arrow = document.getElementById('arrow-' + id);
+
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                arrow.innerHTML = '&#9650;';
+            } else {
+                container.classList.add('hidden');
+                arrow.innerHTML = '&#9660;';
+            }
+        }
+
+        function runSimulation() {
+            const age = parseInt(document.getElementById('selectAge').value);
+            const edu = document.getElementById('selectEdu').value;
+            const gpa = parseFloat(document.getElementById('selectGpa').value);
+            const laptop = document.getElementById('selectLaptop').value;
+
+            let exp = 1;
+            if (laptop === 'high') { exp = 2; } else if (laptop === 'low') { exp = 0; }
+
+            const ageMinOk = age >= 16;
+            const ageMaxOk = age <= 35;
+            const ageOk = ageMinOk && ageMaxOk;
+
+            const academicOk = (edu === "SMA" && gpa >= 7.5) || (edu === "S1" && gpa >= 3.0);
+            const techOk = (exp >= 1 && laptop === "high") || (exp >= 1 || laptop === "medium");
+
+            const finalAccepted = ageOk && academicOk && techOk;
+
+            runLeftAnimation(ageMinOk, ageMaxOk, academicOk, techOk, finalAccepted);
+            runRightAnimation(ageOk, academicOk, techOk, finalAccepted);
+        }
+
+        function runLeftAnimation(ageMinOk, ageMaxOk, academicOk, techOk, accepted) {
+            const flowLine1 = document.getElementById('leftFlow1');
+            const flowLine2 = document.getElementById('leftFlow2');
+            const block = document.getElementById('leftConditionBlock');
+            const outcomeNode = document.getElementById('leftFinalOutcomeNode');
+
+            const leftAgeMinItem = document.getElementById('leftAgeMinItem');
+            const leftAgeMaxItem = document.getElementById('leftAgeMaxItem');
+            const leftEduS1Item = document.getElementById('leftEduS1Item');
+            const leftEduSmaItem = document.getElementById('leftEduSmaItem');
+            const leftTechAdvItem = document.getElementById('leftTechAdvItem');
+            const leftTechBasicItem = document.getElementById('leftTechBasicItem');
+
+            flowLine1.className = 'absolute inset-0 w-full hidden';
+            flowLine2.className = 'absolute inset-0 w-full hidden';
+
+            block.className = 'z-10 bg-white border-2 border-slate-200 p-4 rounded-xl shadow-sm max-w-sm w-full text-left transition-all duration-300';
+            outcomeNode.className = 'z-10 bg-white border-2 border-slate-200 px-4 py-3 rounded-xl shadow-sm text-center max-w-xs w-full transition-all duration-500';
+
+            leftAgeMinItem.className = "border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700 transition";
+            leftAgeMaxItem.className = "border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700 transition";
+            leftEduS1Item.className = "border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700 transition";
+            leftEduSmaItem.className = "border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700 transition";
+            leftTechAdvItem.className = "border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700 transition";
+            leftTechBasicItem.className = "border border-slate-200 bg-slate-50 px-2.5 py-1.5 rounded-md text-slate-700 transition";
+
+            setTimeout(() => {
+                flowLine1.className = 'absolute inset-0 w-full flow-line-vertical block';
+            }, 50);
+
+            setTimeout(() => {
+                block.classList.add('border-blue-500', 'ring-2', 'ring-blue-100');
+
+                leftAgeMinItem.className = ageMinOk ? "border-green-500 bg-green-50 px-2.5 py-1.5 rounded-md text-green-700 font-bold" : "border-red-400 bg-red-50 px-2.5 py-1.5 rounded-md text-red-600 font-bold";
+                leftAgeMaxItem.className = ageMaxOk ? "border-green-500 bg-green-50 px-2.5 py-1.5 rounded-md text-green-700 font-bold" : "border-red-400 bg-red-50 px-2.5 py-1.5 rounded-md text-red-600 font-bold";
+
+                leftEduS1Item.className = academicOk ? "border-green-500 bg-green-50 px-2.5 py-1.5 rounded-md text-green-700 font-bold" : "border-red-400 bg-red-50 px-2.5 py-1.5 rounded-md text-red-600 font-bold";
+                leftEduSmaItem.className = academicOk ? "border-green-500 bg-green-50 px-2.5 py-1.5 rounded-md text-green-700 font-bold" : "border-red-400 bg-red-50 px-2.5 py-1.5 rounded-md text-red-600 font-bold";
+
+                leftTechAdvItem.className = techOk ? "border-green-500 bg-green-50 px-2.5 py-1.5 rounded-md text-green-700 font-bold" : "border-red-400 bg-red-50 px-2.5 py-1.5 rounded-md text-red-600 font-bold";
+                leftTechBasicItem.className = techOk ? "border-green-500 bg-green-50 px-2.5 py-1.5 rounded-md text-green-700 font-bold" : "border-red-400 bg-red-50 px-2.5 py-1.5 rounded-md text-red-600 font-bold";
+
+                flowLine2.className = 'absolute inset-0 w-full flow-line-vertical block';
+            }, 350);
+
+            setTimeout(() => {
+                const emoji = document.getElementById('leftOutcomeEmoji');
+                const title = document.getElementById('leftOutcomeTitle');
+                const desc = document.getElementById('leftOutcomeDesc');
+
+                outcomeNode.classList.remove('border-slate-200');
+
+                if (accepted) {
+                    emoji.innerText = "🎉";
+                    title.innerText = "Diterima";
+                    desc.innerText = "Semua parameter valid di dalam monolitik.";
+                    outcomeNode.classList.add('border-green-500', 'ring-2', 'ring-green-100', 'scale-105');
+                } else {
+                    emoji.innerText = "🛑";
+                    title.innerText = "Gagal";
+                    desc.innerText = "Satu atau lebih kriteria gagal di dalam evaluasi.";
+                    outcomeNode.classList.add('border-red-500', 'ring-2', 'ring-red-100', 'scale-105');
+                }
+            }, 750);
+        }
+
+        function runRightAnimation(ageOk, academicOk, techOk, accepted) {
+            const flowLine1 = document.getElementById('rightFlow1');
+            const flowLine2 = document.getElementById('rightFlow2');
+
+            const ageFunc = document.getElementById('rightAgeFunc');
+            const acadFunc = document.getElementById('rightAcadFunc');
+            const techFunc = document.getElementById('rightTechFunc');
+
+            const ageText = document.getElementById('rightAgeText');
+            const acadText = document.getElementById('rightAcadText');
+            const techText = document.getElementById('rightTechText');
+
+            const outcomeNode = document.getElementById('rightFinalOutcomeNode');
+
+            flowLine1.className = 'absolute inset-0 w-full hidden';
+            flowLine2.className = 'absolute inset-0 w-full hidden';
+
+            ageFunc.className = 'bg-white border-2 border-slate-200 p-3 rounded-xl shadow-sm cursor-pointer hover:border-blue-400 transition-all duration-300 select-none';
+            acadFunc.className = 'bg-white border-2 border-slate-200 p-3 rounded-xl shadow-sm cursor-pointer hover:border-blue-400 transition-all duration-300 select-none';
+            techFunc.className = 'bg-white border-2 border-slate-200 p-3 rounded-xl shadow-sm cursor-pointer hover:border-blue-400 transition-all duration-300 select-none';
+
+            outcomeNode.className = 'z-10 bg-white border-2 border-slate-200 px-4 py-3 rounded-xl shadow-sm text-center max-w-xs w-full transition-all duration-500';
+
+            setTimeout(() => {
+                flowLine1.className = 'absolute inset-0 w-full flow-line-vertical block';
+            }, 50);
+
+            setTimeout(() => {
+                if (ageOk) {
+                    ageFunc.classList.add('border-green-500', 'ring-2', 'ring-green-100');
+                    ageText.innerText = "Sesuai";
+                } else {
+                    ageFunc.classList.add('border-red-500', 'ring-2', 'ring-red-100');
+                    ageText.innerText = "Gagal";
+                }
+
+                if (academicOk) {
+                    acadFunc.classList.add('border-green-500', 'ring-2', 'ring-green-100');
+                    acadText.innerText = "Sesuai";
+                } else {
+                    acadFunc.classList.add('border-red-500', 'ring-2', 'ring-red-100');
+                    acadText.innerText = "Gagal";
+                }
+
+                if (techOk) {
+                    techFunc.classList.add('border-green-500', 'ring-2', 'ring-green-100');
+                    techText.innerText = "Sesuai";
+                } else {
+                    techFunc.classList.add('border-red-500', 'ring-2', 'ring-red-100');
+                    techText.innerText = "Gagal";
+                }
+
+                flowLine2.className = 'absolute inset-0 w-full flow-line-vertical block';
+            }, 350);
+
+            setTimeout(() => {
+                const emoji = document.getElementById('rightOutcomeEmoji');
+                const title = document.getElementById('rightOutcomeTitle');
+                const desc = document.getElementById('rightOutcomeDesc');
+
+                outcomeNode.classList.remove('border-slate-200');
+
+                if (accepted) {
+                    emoji.innerText = "🎉";
+                    title.innerText = "Diterima";
+                    desc.innerText = "Berhasil lolos evaluasi fungsi modular.";
+                    outcomeNode.classList.add('border-green-500', 'ring-2', 'ring-green-100', 'scale-105');
+                } else {
+                    emoji.innerText = "🛑";
+                    title.innerText = "Gagal";
+                    desc.innerText = "Tidak lolos pada evaluasi fungsi modular.";
+                    outcomeNode.classList.add('border-red-500', 'ring-2', 'ring-red-100', 'scale-105');
+                }
+            }, 750);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            runSimulation();
+        });
+    </script>
+</body>
+
+</html>

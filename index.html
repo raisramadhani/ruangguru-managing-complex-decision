@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Keputusan: Nongkrong vs Belajar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .flow-line {
+            background: repeating-linear-gradient(
+                to right,
+                #3b82f6 0%,
+                #3b82f6 50%,
+                transparent 50%,
+                transparent 100%
+            );
+            background-size: 20px 100%;
+            animation: flow 1s linear infinite;
+        }
+        .flow-line-vertical {
+            background: repeating-linear-gradient(
+                to bottom,
+                #3b82f6 0%,
+                #3b82f6 50%,
+                transparent 50%,
+                transparent 100%
+            );
+            background-size: 100% 20px;
+            animation: flow-v 1s linear infinite;
+        }
+        @keyframes flow {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 0; }
+        }
+        @keyframes flow-v {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 20px; }
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-800 font-sans min-h-screen flex flex-col items-center justify-center p-6">
+
+    <main class="max-w-4xl w-full border-2 border-slate-200 rounded-xl p-8 bg-white shadow-sm">
+        <header class="text-center mb-8">
+            <h1 class="text-2xl font-extrabold text-slate-900 mb-2">
+                Dilema Hari Ini: Nongkrong atau Belajar di Rumah?
+            </h1>
+            <p class="text-slate-600 max-w-xl mx-auto">
+                Tentukan kondisi Anda saat ini menggunakan tombol di bawah, lalu lihat bagaimana alur keputusan berjalan.
+            </p>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="border-2 border-slate-200 rounded-lg p-4 flex flex-col justify-between">
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-1">Uang Saku</h3>
+                    <p class="text-sm text-slate-500 mb-4">Apakah anggaran untuk nongkrong masih aman?</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="btnHasMoneyTrue" onclick="setCondition('hasMoney', true)" class="flex-1 py-2 px-3 border-2 border-blue-600 bg-blue-600 text-white font-semibold rounded-md text-sm transition hover:bg-blue-700">
+                        Ada Sisa
+                    </button>
+                    <button id="btnHasMoneyFalse" onclick="setCondition('hasMoney', false)" class="flex-1 py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        Habis
+                    </button>
+                </div>
+            </div>
+
+            <div class="border-2 border-slate-200 rounded-lg p-4 flex flex-col justify-between">
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-1">Tugas Sekolah</h3>
+                    <p class="text-sm text-slate-500 mb-4">Bagaimana status semua tugas sekolah Anda?</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="btnHasFinishedTasksTrue" onclick="setCondition('hasFinishedTasks', true)" class="flex-1 py-2 px-3 border-2 border-blue-600 bg-blue-600 text-white font-semibold rounded-md text-sm transition hover:bg-blue-700">
+                        Selesai
+                    </button>
+                    <button id="btnHasFinishedTasksFalse" onclick="setCondition('hasFinishedTasks', false)" class="flex-1 py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        Belum Selesai
+                    </button>
+                </div>
+            </div>
+
+            <div class="border-2 border-slate-200 rounded-lg p-4 flex flex-col justify-between">
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-1">Jadwal Ujian</h3>
+                    <p class="text-sm text-slate-500 mb-4">Apakah ada jadwal ujian untuk esok hari?</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="btnHasExamTrue" onclick="setCondition('hasExam', true)" class="flex-1 py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        Ada Besok
+                    </button>
+                    <button id="btnHasExamFalse" onclick="setCondition('hasExam', false)" class="flex-1 py-2 px-3 border-2 border-blue-600 bg-blue-600 text-white font-semibold rounded-md text-sm transition hover:bg-blue-700">
+                        Tidak Ada
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="flex flex-col items-center justify-center min-h-[320px] bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl p-6 relative overflow-hidden">
+            
+            <div id="startNode" class="z-10 bg-white border-2 border-slate-300 px-6 py-3 rounded-lg shadow-sm font-bold text-slate-700 text-center mb-6">
+                Mulai Evaluasi Kondisi
+            </div>
+
+            <div class="w-0.5 h-10 border-l-2 border-dashed border-slate-300 relative">
+                <div id="flowLine1" class="absolute inset-0 w-full hidden"></div>
+            </div>
+
+            <div id="decisionNode" class="z-10 bg-white border-2 border-slate-300 p-6 rounded-xl shadow-sm text-center max-w-sm w-full mx-auto relative transition-all duration-300">
+                <span class="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Pengecekan Logika</span>
+                <p class="text-slate-800 font-semibold text-sm">
+                    Uang Saku & Tugas Selesai & Tidak Ada Ujian
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 w-full max-w-xl relative mt-6 h-12">
+                <div class="absolute inset-0 flex justify-center">
+                    <div class="w-0.5 h-full border-l-2 border-dashed border-slate-300 relative">
+                        <div id="flowLineVertical" class="absolute inset-0 w-full hidden"></div>
+                    </div>
+                </div>
+                <div class="absolute top-1/2 left-1/4 right-1/4 h-0.5 border-t-2 border-dashed border-slate-300 -translate-y-1/2">
+                    <div id="flowLineHorizontal" class="absolute inset-0 h-full hidden"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8 w-full max-w-2xl z-10">
+                <div id="outcomeNongkrong" class="bg-white border-2 border-slate-200 p-5 rounded-xl shadow-sm text-center transition-all duration-500">
+                    <div class="text-3xl mb-2">☕</div>
+                    <h4 class="font-bold text-slate-900 text-base mb-1">Nongkrong</h4>
+                    <p class="text-xs text-slate-500">Refreshing karena semua urusan sudah beres.</p>
+                </div>
+
+                <div id="outcomeBelajar" class="bg-white border-2 border-slate-200 p-5 rounded-xl shadow-sm text-center transition-all duration-500">
+                    <div class="text-3xl mb-2">📚</div>
+                    <h4 class="font-bold text-slate-900 text-base mb-1">Belajar di Rumah</h4>
+                    <p class="text-xs text-slate-500">Prioritaskan tugas dan persiapan akademis.</p>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        const state = {
+            hasMoney: true,
+            hasFinishedTasks: true,
+            hasExam: false
+        };
+
+        function setCondition(property, value) {
+            state[property] = value;
+            updateButtons();
+            runFlowAnimation();
+        }
+
+        function updateButtons() {
+            const activeClass = ['border-blue-600', 'bg-blue-600', 'text-white', 'hover:bg-blue-700'];
+            const inactiveClass = ['border-slate-200', 'text-slate-700', 'bg-transparent', 'hover:bg-slate-100'];
+
+            const hasMoneyTrue = document.getElementById('btnHasMoneyTrue');
+            const hasMoneyFalse = document.getElementById('btnHasMoneyFalse');
+            if (state.hasMoney) {
+                hasMoneyTrue.classList.add(...activeClass);
+                hasMoneyTrue.classList.remove(...inactiveClass);
+                hasMoneyFalse.classList.add(...inactiveClass);
+                hasMoneyFalse.classList.remove(...activeClass);
+            } else {
+                hasMoneyTrue.classList.add(...inactiveClass);
+                hasMoneyTrue.classList.remove(...activeClass);
+                hasMoneyFalse.classList.add(...activeClass);
+                hasMoneyFalse.classList.remove(...inactiveClass);
+            }
+
+            const hasFinishedTasksTrue = document.getElementById('btnHasFinishedTasksTrue');
+            const hasFinishedTasksFalse = document.getElementById('btnHasFinishedTasksFalse');
+            if (state.hasFinishedTasks) {
+                hasFinishedTasksTrue.classList.add(...activeClass);
+                hasFinishedTasksTrue.classList.remove(...inactiveClass);
+                hasFinishedTasksFalse.classList.add(...inactiveClass);
+                hasFinishedTasksFalse.classList.remove(...activeClass);
+            } else {
+                hasFinishedTasksTrue.classList.add(...inactiveClass);
+                hasFinishedTasksTrue.classList.remove(...activeClass);
+                hasFinishedTasksFalse.classList.add(...activeClass);
+                hasFinishedTasksFalse.classList.remove(...inactiveClass);
+            }
+
+            const hasExamTrue = document.getElementById('btnHasExamTrue');
+            const hasExamFalse = document.getElementById('btnHasExamFalse');
+            if (state.hasExam) {
+                hasExamTrue.classList.add(...activeClass);
+                hasExamTrue.classList.remove(...inactiveClass);
+                hasExamFalse.classList.add(...inactiveClass);
+                hasExamFalse.classList.remove(...activeClass);
+            } else {
+                hasExamTrue.classList.add(...inactiveClass);
+                hasExamTrue.classList.remove(...activeClass);
+                hasExamFalse.classList.add(...activeClass);
+                hasExamFalse.classList.remove(...inactiveClass);
+            }
+        }
+
+        function runFlowAnimation() {
+            const flowLine1 = document.getElementById('flowLine1');
+            const flowLineVertical = document.getElementById('flowLineVertical');
+            const flowLineHorizontal = document.getElementById('flowLineHorizontal');
+            const decisionNode = document.getElementById('decisionNode');
+            const outcomeNongkrong = document.getElementById('outcomeNongkrong');
+            const outcomeBelajar = document.getElementById('outcomeBelajar');
+
+            flowLine1.className = 'absolute inset-0 w-full hidden';
+            flowLineVertical.className = 'absolute inset-0 w-full hidden';
+            flowLineHorizontal.className = 'absolute inset-0 h-full hidden';
+
+            decisionNode.className = 'z-10 bg-white border-2 border-slate-300 p-6 rounded-xl shadow-sm text-center max-w-sm w-full mx-auto relative transition-all duration-300';
+            outcomeNongkrong.className = 'bg-white border-2 border-slate-200 p-5 rounded-xl shadow-sm text-center transition-all duration-500';
+            outcomeBelajar.className = 'bg-white border-2 border-slate-200 p-5 rounded-xl shadow-sm text-center transition-all duration-500';
+
+            setTimeout(() => {
+                flowLine1.className = 'absolute inset-0 w-full flow-line-vertical block';
+            }, 50);
+
+            setTimeout(() => {
+                decisionNode.classList.remove('border-slate-300');
+                decisionNode.classList.add('border-blue-500', 'ring-2', 'ring-blue-100');
+            }, 400);
+
+            setTimeout(() => {
+                flowLineVertical.className = 'absolute inset-0 w-full flow-line-vertical block';
+                flowLineHorizontal.className = 'absolute inset-0 h-full flow-line block';
+            }, 800);
+
+            setTimeout(() => {
+                const isGoingToHangout = state.hasMoney && state.hasFinishedTasks && !state.hasExam;
+
+                if (isGoingToHangout) {
+                    outcomeNongkrong.classList.remove('border-slate-200');
+                    outcomeNongkrong.classList.add('border-green-500', 'ring-2', 'ring-green-100', 'scale-105');
+                    outcomeBelajar.classList.add('opacity-40');
+                } else {
+                    outcomeBelajar.classList.remove('border-slate-200');
+                    outcomeBelajar.classList.add('border-amber-500', 'ring-2', 'ring-amber-100', 'scale-105');
+                    outcomeNongkrong.classList.add('opacity-40');
+                }
+            }, 1400);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateButtons();
+            runFlowAnimation();
+        });
+    </script>
+</body>
+</html>

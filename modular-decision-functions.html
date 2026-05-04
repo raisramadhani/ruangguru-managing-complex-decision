@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Keputusan: Modular Decision Functions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .flow-line-vertical {
+            background: repeating-linear-gradient(to bottom,
+                    #3b82f6 0%,
+                    #3b82f6 50%,
+                    transparent 50%,
+                    transparent 100%);
+            background-size: 100% 20px;
+            animation: flow-v 1s linear infinite;
+        }
+
+        @keyframes flow-v {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 0 20px;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-white text-slate-800 font-sans min-h-screen flex flex-col items-center justify-center p-6">
+
+    <main class="max-w-4xl w-full border-2 border-slate-200 rounded-xl p-8 bg-white shadow-sm">
+        <header class="text-center mb-8">
+            <h1 class="text-2xl font-extrabold text-slate-900 mb-2">
+                Evaluasi Kandidat Modular
+            </h1>
+            <p class="text-slate-600 max-w-xl mx-auto">
+                Setiap fungsi memeriksa satu aspek secara independen. Jika semua fungsi mengembalikan nilai <span
+                    class="font-mono bg-slate-100 px-1 rounded text-blue-600">True</span>, kandidat dinyatakan diterima.
+            </p>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+
+            <div id="cardAge"
+                class="border-2 border-blue-600 rounded-lg p-4 flex flex-col justify-between transition-all duration-300">
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-1">Fungsi 1: check_age_eligibility</h3>
+                    <p class="text-sm text-slate-500 mb-4">Tentukan usia kandidat (16 - 35 tahun):</p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button id="btnAgeTooYoung" onclick="setCondition('age', 15)"
+                        class="py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        15 Tahun (Terlalu Muda)
+                    </button>
+                    <button id="btnAgeOk" onclick="setCondition('age', 22)"
+                        class="py-2 px-3 border-2 border-blue-600 bg-blue-600 text-white font-semibold rounded-md text-sm transition hover:bg-blue-700">
+                        22 Tahun (Sesuai)
+                    </button>
+                    <button id="btnAgeTooOld" onclick="setCondition('age', 38)"
+                        class="py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        38 Tahun (Terlalu Tua)
+                    </button>
+                </div>
+            </div>
+
+            <div id="cardAcademic"
+                class="border-2 border-blue-600 rounded-lg p-4 flex flex-col justify-between transition-all duration-300">
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-1">Fungsi 2: check_academic</h3>
+                    <p class="text-sm text-slate-500 mb-4">Pilih jenjang pendidikan dan nilai GPA:</p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button id="btnAcadS1Ok" onclick="setCondition('academic', {edu: 'S1', gpa: 3.2})"
+                        class="py-2 px-3 border-2 border-blue-600 bg-blue-600 text-white font-semibold rounded-md text-sm transition hover:bg-blue-700">
+                        S1 - GPA 3.2 (Lolos)
+                    </button>
+                    <button id="btnAcadSmaOk" onclick="setCondition('academic', {edu: 'SMA', gpa: 8.0})"
+                        class="py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        SMA - Nilai 8.0 (Lolos)
+                    </button>
+                    <button id="btnAcadFail" onclick="setCondition('academic', {edu: 'S1', gpa: 2.8})"
+                        class="py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        S1 - GPA 2.8 (Gagal)
+                    </button>
+                </div>
+            </div>
+
+            <div id="cardTechnical"
+                class="border-2 border-blue-600 rounded-lg p-4 flex flex-col justify-between transition-all duration-300">
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-1">Fungsi 3: check_technical</h3>
+                    <p class="text-sm text-slate-500 mb-4">Pengalaman coding & spesifikasi laptop:</p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button id="btnTechAdvanced" onclick="setCondition('technical', {exp: 2, laptop: 'high'})"
+                        class="py-2 px-3 border-2 border-blue-600 bg-blue-600 text-white font-semibold rounded-md text-sm transition hover:bg-blue-700">
+                        Exp 2 Thn, High Spec (Lolos)
+                    </button>
+                    <button id="btnTechBasic" onclick="setCondition('technical', {exp: 0, laptop: 'medium'})"
+                        class="py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        Exp 0 Thn, Medium Spec (Lolos)
+                    </button>
+                    <button id="btnTechFail" onclick="setCondition('technical', {exp: 0, laptop: 'low'})"
+                        class="py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        Exp 0 Thn, Low Spec (Gagal)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section
+            class="flex flex-col items-center justify-center min-h-[440px] bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl p-6 relative overflow-hidden">
+
+            <div id="startNode"
+                class="z-10 bg-white border-2 border-slate-300 px-6 py-3 rounded-lg shadow-sm font-bold text-slate-700 text-center">
+                Mulai Proses Evaluasi
+            </div>
+
+            <div class="w-0.5 h-6 border-l-2 border-dashed border-slate-300 relative">
+                <div id="flowLine1" class="absolute inset-0 w-full hidden"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl z-10">
+                <div id="nodeAgeFunc"
+                    class="bg-white border-2 border-slate-200 p-4 rounded-xl shadow-sm text-center transition-all duration-300">
+                    <p class="text-xs font-bold text-blue-600 uppercase mb-1">Fungsi Usia</p>
+                    <p id="nodeAgeText" class="text-slate-800 font-semibold text-xs">Mengevaluasi...</p>
+                </div>
+
+                <div id="nodeAcadFunc"
+                    class="bg-white border-2 border-slate-200 p-4 rounded-xl shadow-sm text-center transition-all duration-300">
+                    <p class="text-xs font-bold text-blue-600 uppercase mb-1">Fungsi Akademik</p>
+                    <p id="nodeAcadText" class="text-slate-800 font-semibold text-xs">Mengevaluasi...</p>
+                </div>
+
+                <div id="nodeTechFunc"
+                    class="bg-white border-2 border-slate-200 p-4 rounded-xl shadow-sm text-center transition-all duration-300">
+                    <p class="text-xs font-bold text-blue-600 uppercase mb-1">Fungsi Teknis</p>
+                    <p id="nodeTechText" class="text-slate-800 font-semibold text-xs">Mengevaluasi...</p>
+                </div>
+            </div>
+
+            <div class="w-0.5 h-8 border-l-2 border-dashed border-slate-300 relative mt-4">
+                <div id="flowLine2" class="absolute inset-0 w-full hidden"></div>
+            </div>
+
+            <div id="finalOutcomeNode"
+                class="z-10 bg-white border-2 border-slate-200 px-6 py-4 rounded-xl shadow-sm text-center max-w-sm w-full transition-all duration-500">
+                <div id="outcomeEmoji" class="text-3xl mb-1">⏳</div>
+                <h4 id="outcomeTitle" class="font-bold text-slate-900 text-base mb-1">Menunggu Keputusan</h4>
+                <p id="outcomeDesc" class="text-xs text-slate-500">Hasil evaluasi modular akan dikombinasikan di sini.
+                </p>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        const state = {
+            age: 22,
+            academic: { edu: 'S1', gpa: 3.2 },
+            technical: { exp: 2, laptop: 'high' }
+        };
+
+        function setCondition(property, value) {
+            state[property] = value;
+            updateUI();
+        }
+
+        function updateUI() {
+            const activeClass = ['border-blue-600', 'bg-blue-600', 'text-white', 'hover:bg-blue-700'];
+            const inactiveClass = ['border-slate-200', 'text-slate-700', 'bg-transparent', 'hover:bg-slate-100'];
+
+            const btnAgeTooYoung = document.getElementById('btnAgeTooYoung');
+            const btnAgeOk = document.getElementById('btnAgeOk');
+            const btnAgeTooOld = document.getElementById('btnAgeTooOld');
+
+            btnAgeTooYoung.className = "py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + (state.age === 15 ? activeClass.join(' ') : inactiveClass.join(' '));
+            btnAgeOk.className = "py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + (state.age === 22 ? activeClass.join(' ') : inactiveClass.join(' '));
+            btnAgeTooOld.className = "py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + (state.age === 38 ? activeClass.join(' ') : inactiveClass.join(' '));
+
+            const btnAcadS1Ok = document.getElementById('btnAcadS1Ok');
+            const btnAcadSmaOk = document.getElementById('btnAcadSmaOk');
+            const btnAcadFail = document.getElementById('btnAcadFail');
+
+            btnAcadS1Ok.className = "py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + (state.academic.edu === 'S1' && state.academic.gpa === 3.2 ? activeClass.join(' ') : inactiveClass.join(' '));
+            btnAcadSmaOk.className = "py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + (state.academic.edu === 'SMA' && state.academic.gpa === 8.0 ? activeClass.join(' ') : inactiveClass.join(' '));
+            btnAcadFail.className = "py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + (state.academic.edu === 'S1' && state.academic.gpa === 2.8 ? activeClass.join(' ') : inactiveClass.join(' '));
+
+            const btnTechAdvanced = document.getElementById('btnTechAdvanced');
+            const btnTechBasic = document.getElementById('btnTechBasic');
+            const btnTechFail = document.getElementById('btnTechFail');
+
+            btnTechAdvanced.className = "py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + (state.technical.exp === 2 && state.technical.laptop === 'high' ? activeClass.join(' ') : inactiveClass.join(' '));
+            btnTechBasic.className = "py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + (state.technical.exp === 0 && state.technical.laptop === 'medium' ? activeClass.join(' ') : inactiveClass.join(' '));
+            btnTechFail.className = "py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + (state.technical.exp === 0 && state.technical.laptop === 'low' ? activeClass.join(' ') : inactiveClass.join(' '));
+
+            runFlowAnimation();
+        }
+
+        function checkAge(age) {
+            if (age < 16) return { ok: false, msg: "Terlalu muda" };
+            if (age > 35) return { ok: false, msg: "Usia produktif terlewati" };
+            return { ok: true, msg: "Usia sesuai" };
+        }
+
+        function checkAcademic(edu, gpa) {
+            if (edu === "SMA" && gpa >= 7.5) return { ok: true, msg: "Memenuhi syarat akademik" };
+            if (edu === "S1" && gpa >= 3.0) return { ok: true, msg: "Memenuhi syarat akademik" };
+            return { ok: false, msg: "Syarat akademik belum terpenuhi" };
+        }
+
+        function checkTechnical(exp, laptop) {
+            if (exp >= 1 && laptop === "high") return { ok: true, msg: "Siap untuk program advanced" };
+            if (exp >= 1 || laptop === "medium") return { ok: true, msg: "Siap untuk program basic" };
+            return { ok: false, msg: "Perlu persiapan teknis" };
+        }
+
+        function runFlowAnimation() {
+            const flowLine1 = document.getElementById('flowLine1');
+            const flowLine2 = document.getElementById('flowLine2');
+
+            const nodeAgeFunc = document.getElementById('nodeAgeFunc');
+            const nodeAcadFunc = document.getElementById('nodeAcadFunc');
+            const nodeTechFunc = document.getElementById('nodeTechFunc');
+
+            const nodeAgeText = document.getElementById('nodeAgeText');
+            const nodeAcadText = document.getElementById('nodeAcadText');
+            const nodeTechText = document.getElementById('nodeTechText');
+
+            const finalOutcomeNode = document.getElementById('finalOutcomeNode');
+            const outcomeEmoji = document.getElementById('outcomeEmoji');
+            const outcomeTitle = document.getElementById('outcomeTitle');
+            const outcomeDesc = document.getElementById('outcomeDesc');
+
+            flowLine1.className = 'absolute inset-0 w-full hidden';
+            flowLine2.className = 'absolute inset-0 w-full hidden';
+
+            nodeAgeFunc.className = 'bg-white border-2 border-slate-200 p-4 rounded-xl shadow-sm text-center transition-all duration-300';
+            nodeAcadFunc.className = 'bg-white border-2 border-slate-200 p-4 rounded-xl shadow-sm text-center transition-all duration-300';
+            nodeTechFunc.className = 'bg-white border-2 border-slate-200 p-4 rounded-xl shadow-sm text-center transition-all duration-300';
+
+            finalOutcomeNode.className = 'z-10 bg-white border-2 border-slate-200 px-6 py-4 rounded-xl shadow-sm text-center max-w-sm w-full transition-all duration-500';
+
+            setTimeout(() => {
+                flowLine1.className = 'absolute inset-0 w-full flow-line-vertical block';
+            }, 50);
+
+            setTimeout(() => {
+                const ageRes = checkAge(state.age);
+                nodeAgeText.innerText = ageRes.msg;
+                if (ageRes.ok) {
+                    nodeAgeFunc.classList.add('border-green-500', 'ring-2', 'ring-green-100');
+                } else {
+                    nodeAgeFunc.classList.add('border-red-500', 'ring-2', 'ring-red-100');
+                }
+
+                const acadRes = checkAcademic(state.academic.edu, state.academic.gpa);
+                nodeAcadText.innerText = acadRes.msg;
+                if (acadRes.ok) {
+                    nodeAcadFunc.classList.add('border-green-500', 'ring-2', 'ring-green-100');
+                } else {
+                    nodeAcadFunc.classList.add('border-red-500', 'ring-2', 'ring-red-100');
+                }
+
+                const techRes = checkTechnical(state.technical.exp, state.technical.laptop);
+                nodeTechText.innerText = techRes.msg;
+                if (techRes.ok) {
+                    nodeTechFunc.classList.add('border-green-500', 'ring-2', 'ring-green-100');
+                } else {
+                    nodeTechFunc.classList.add('border-red-500', 'ring-2', 'ring-red-100');
+                }
+
+                flowLine2.className = 'absolute inset-0 w-full flow-line-vertical block';
+            }, 350);
+
+            setTimeout(() => {
+                const ageOk = checkAge(state.age).ok;
+                const academicOk = checkAcademic(state.academic.edu, state.academic.gpa).ok;
+                const techOk = checkTechnical(state.technical.exp, state.technical.laptop).ok;
+
+                finalOutcomeNode.classList.remove('border-slate-200');
+
+                if (ageOk && academicOk && techOk) {
+                    outcomeEmoji.innerText = "🎉";
+                    outcomeTitle.innerText = "DITERIMA";
+                    outcomeDesc.innerText = "Selamat, semua kriteria modular terpenuhi!";
+                    finalOutcomeNode.classList.add('border-green-500', 'ring-2', 'ring-green-100', 'scale-105');
+                } else {
+                    outcomeEmoji.innerText = "🛑";
+                    outcomeTitle.innerText = "BELUM DITERIMA";
+                    outcomeDesc.innerText = "Ada syarat kriteria yang belum terpenuhi.";
+                    finalOutcomeNode.classList.add('border-red-500', 'ring-2', 'ring-red-100', 'scale-105');
+                }
+            }, 750);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI();
+        });
+    </script>
+</body>
+
+</html>

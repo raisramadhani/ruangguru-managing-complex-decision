@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz: Complex Decision Logic</title>
+
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>"
+        type="image/svg+xml" />
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            color: #2c3e50;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .quiz-page-container {
+            background: #ffffff;
+            max-width: 900px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            padding: 40px;
+            border: 1px solid #e9ecef;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .quiz-title {
+            font-size: 1.8em;
+            color: #8e44ad;
+            font-weight: bold;
+        }
+
+        .quiz-progress {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .quiz-progress-text {
+            font-size: 0.95em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .quiz-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .quiz-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8e44ad, #9b59b6);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .quiz-score-display {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #8e44ad;
+            background: #f3e5f5;
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 2px solid #8e44ad;
+        }
+
+        .quiz-question-container {
+            margin-bottom: 30px;
+        }
+
+        .quiz-question {
+            font-size: 1.35em;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .quiz-code-block {
+            background: #2d3748 !important;
+            border: 1px solid #4a5568;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .quiz-code-block pre {
+            margin: 0 !important;
+            padding: 20px !important;
+            background: transparent !important;
+        }
+
+        .quiz-code-block code {
+            font-family: "Fira Code", "Consolas", "Monaco", monospace !important;
+            font-size: 1em !important;
+            line-height: 1.5 !important;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        @media (max-width: 768px) {
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .quiz-option {
+            background: #8e44ad;
+            color: white;
+            border: none;
+            padding: 18px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.05em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: left;
+            box-shadow: 0 4px 6px rgba(142, 68, 173, 0.15);
+        }
+
+        .quiz-option:hover:not(:disabled) {
+            background: #7d3c98;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(142, 68, 173, 0.25);
+        }
+
+        .quiz-option:disabled {
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .quiz-option.correct {
+            background: #27ae60 !important;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3) !important;
+        }
+
+        .quiz-option.incorrect {
+            background: #e74c3c !important;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3) !important;
+        }
+
+        .quiz-option.not-selected {
+            opacity: 0.4;
+        }
+
+        .quiz-hint {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-left: 5px solid #fdcb6e;
+            font-size: 0.95em;
+            color: #856404;
+            line-height: 1.5;
+        }
+
+        .feedback-box {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 8px;
+            font-size: 1em;
+            line-height: 1.5;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .feedback-incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .quiz-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 35px;
+            border-top: 2px solid #e9ecef;
+            padding-top: 25px;
+        }
+
+        .quiz-nav-btn {
+            background: #8e44ad;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.05em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(142, 68, 173, 0.15);
+        }
+
+        .quiz-nav-btn:hover:not(:disabled) {
+            background: #7d3c98;
+            transform: translateY(-2px);
+        }
+
+        .quiz-nav-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .quiz-nav-btn.finish-btn {
+            background: #27ae60;
+            box-shadow: 0 4px 6px rgba(39, 174, 96, 0.15);
+        }
+
+        .quiz-nav-btn.finish-btn:hover {
+            background: #229954;
+        }
+
+        .quiz-final-results {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .final-score-display {
+            margin: 30px 0;
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px auto;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 8px 20px rgba(142, 68, 173, 0.3);
+            animation: scoreReveal 1s ease;
+        }
+
+        #finalScoreMessage {
+            font-size: 1.2em;
+            color: #34495e;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+        }
+
+        @keyframes scoreReveal {
+            from {
+                transform: scale(0) rotate(180deg);
+            }
+
+            to {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="quiz-page-container">
+        <div class="quiz-header">
+            <div class="quiz-title" id="quizTitle">🧠 Quiz: Loading...</div>
+            <div class="quiz-progress">
+                <span class="quiz-progress-text" id="quizProgress">Question 1 of 5</span>
+                <div class="quiz-progress-bar">
+                    <div class="quiz-progress-fill" id="quizProgressFill"></div>
+                </div>
+            </div>
+            <div class="quiz-score-display">
+                Score: <span id="liveQuizScore">0</span>/5
+            </div>
+        </div>
+
+        <div class="quiz-question-container" id="quizQuestionContainer">
+        </div>
+
+        <div class="quiz-navigation" id="quizNavigation">
+            <button class="quiz-nav-btn" onclick="previousQuizQuestion()" id="prevQuizBtn" style="display: none;">
+                ← Previous
+            </button>
+            <button class="quiz-nav-btn" onclick="nextQuizQuestion()" id="nextQuizBtn" disabled>
+                Next Question →
+            </button>
+            <button class="quiz-nav-btn finish-btn" onclick="showQuizResults()" id="finishQuizBtn"
+                style="display: none;" disabled>
+                🏆 Finish Quiz
+            </button>
+        </div>
+
+        <div class="quiz-final-results" id="quizFinalResults" style="display: none;">
+            <h2>🎊 Selamat! Quiz Selesai!</h2>
+            <div class="final-score-display">
+                <div class="score-circle">
+                    <span id="finalScoreNumber">0</span>/5
+                </div>
+                <div id="finalScoreMessage"></div>
+            </div>
+            <button class="quiz-nav-btn" onclick="restartQuiz()">🔄 Ulangi Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuizQuestion = 1;
+        let quizScore = 0;
+        let quizAnswers = [];
+
+        const quizQuestions = [
+            {
+                title: "🧠 Quiz: Complex Decision Logic",
+                question: "Apa output dari kode decision logic berikut?",
+                code: `def evaluate_student(age, grade, attendance):
+    if age < 17:
+        return "Too young"
+    elif grade < 75:
+        return "Grade too low"
+    elif attendance < 80:
+        return "Attendance issue"
+    else:
+        return "Eligible"
+
+result = evaluate_student(18, 85, 75)
+print(result)`,
+                options: [
+                    { text: 'A) "Attendance issue"', correct: true },
+                    { text: 'B) "Eligible"', correct: false },
+                    { text: 'C) "Grade too low"', correct: false },
+                    { text: 'D) "Too young"', correct: false }
+                ],
+                hint: "💡 Hint: Trace kondisi step by step. Age 18 ≥ 17? Grade 85 ≥ 75? Attendance 75 ≥ 80?",
+                feedback: {
+                    correct: "✅ Tepat! Age 18 ≥ 17 (true), Grade 85 ≥ 75 (true), tapi Attendance 75 < 80 (false), jadi return 'Attendance issue'.",
+                    incorrect: "❌ Salah! Trace step by step: Age OK, Grade OK, tapi Attendance 75 < 80, jadi kondisi ketiga yang match."
+                }
+            },
+            {
+                title: "🔄 Quiz: Loop + Decision Logic",
+                question: "Berapa banyak \"Lolos\" yang akan dicetak dari kode ini?",
+                code: `candidates = [
+    {"name": "A", "score": 85, "age": 20},
+    {"name": "B", "score": 65, "age": 22},
+    {"name": "C", "score": 90, "age": 17},
+    {"name": "D", "score": 80, "age": 25}
+]
+
+for candidate in candidates:
+    if candidate["age"] >= 18 and candidate["score"] >= 80:
+        print("Lolos")
+    else:
+        print("Gagal")`,
+                options: [
+                    { text: 'A) 1', correct: false },
+                    { text: 'B) 4', correct: false },
+                    { text: 'C) 2', correct: true },
+                    { text: 'D) 3', correct: false }
+                ],
+                hint: "💡 Hint: Check setiap candidate - apakah age ≥ 18 AND score ≥ 80? Kedua kondisi harus true.",
+                feedback: {
+                    correct: "✅ Benar! Candidate A (age 20, score 85) dan D (age 25, score 80) memenuhi kedua syarat. Candidate B score kurang, C umur kurang.",
+                    incorrect: "❌ Belum tepat! Check setiap candidate: A(20,85)✓, B(22,65)✗, C(17,90)✗, D(25,80)✓. Total: 2 yang lolos."
+                }
+            },
+            {
+                title: "📊 Quiz: Dictionary Decision Table",
+                question: "Apa yang akan dikembalikan oleh fungsi get_package?",
+                code: `packages = {
+    ("Premium", True): "Full Access",
+    ("Premium", False): "Limited Access",
+    ("Basic", True): "Standard Access",
+    ("Basic", False): "View Only"
+}
+
+def get_package(tier, has_subscription):
+    key = (tier, has_subscription)
+    return packages.get(key, "No Access")
+
+result = get_package("Premium", False)
+print(result)`,
+                options: [
+                    { text: 'A) "No Access"', correct: false },
+                    { text: 'B) "Limited Access"', correct: true },
+                    { text: 'C) "Full Access"', correct: false },
+                    { text: 'D) Error', correct: false }
+                ],
+                hint: "💡 Hint: Key yang dicari adalah (\"Premium\", False). Lihat dictionary untuk menemukan value-nya.",
+                feedback: {
+                    correct: "✅ Excellent! Key ('Premium', False) ada di dictionary dengan value 'Limited Access'.",
+                    incorrect: "❌ Coba lagi! Dictionary lookup dengan key ('Premium', False) menghasilkan 'Limited Access'."
+                }
+            },
+            {
+                title: "🎯 Quiz: Modular Function Logic",
+                question: "Apa hasil akhir dari function chain berikut?",
+                code: `def check_eligibility(age, experience):
+    if age >= 21 and experience >= 2:
+        return True, "Senior Level"
+    elif age >= 18 and experience >= 1:
+        return True, "Junior Level"
+    else:
+        return False, "Not Eligible"
+
+def get_salary(eligible, level):
+    if not eligible:
+        return 0
+    elif "Senior" in level:
+        return 8000000
+    else:
+        return 5000000
+
+eligible, level = check_eligibility(19, 1)
+salary = get_salary(eligible, level)
+print(f"Level: {level}, Salary: {salary}")`,
+                options: [
+                    { text: 'A) Level: Senior Level, Salary: 8000000', correct: false },
+                    { text: 'B) Level: Not Eligible, Salary: 0', correct: false },
+                    { text: 'C) Error terjadi', correct: false },
+                    { text: 'D) Level: Junior Level, Salary: 5000000', correct: true }
+                ],
+                hint: "💡 Hint: Age 19 ≥ 18? Experience 1 ≥ 1? Check kondisi mana yang match di check_eligibility.",
+                feedback: {
+                    correct: "✅ Perfect! Age 19 ≥ 18 dan experience 1 ≥ 1, jadi eligible=True, level='Junior Level', salary=5000000.",
+                    incorrect: "❌ Trace lagi! check_eligibility(19,1): 19≥18 ✓ dan 1≥1 ✓, jadi return (True, 'Junior Level'), salary untuk Junior = 5000000."
+                }
+            },
+            {
+                title: "💼 Quiz: Real-World Decision System",
+                question: "Dalam sistem approval loan, apa hasil untuk aplikasi berikut?",
+                code: `def approve_loan(credit_score, income, age, has_collateral):
+    if age < 18 or age > 65:
+        return "Rejected: Age requirement"
+
+    if credit_score >= 750 and income >= 50000:
+        return "Approved: Excellent profile"
+    elif credit_score >= 650 and income >= 30000 and has_collateral:
+        return "Approved: Good profile with collateral"
+    elif credit_score >= 600 and income >= 40000:
+        return "Approved: Acceptable profile"
+    else:
+        return "Rejected: Insufficient criteria"
+
+result = approve_loan(680, 35000, 28, True)
+print(result)`,
+                options: [
+                    { text: 'A) Approved: Good profile with collateral', correct: true },
+                    { text: 'B) Approved: Excellent profile', correct: false },
+                    { text: 'C) Rejected: Insufficient criteria', correct: false },
+                    { text: 'D) Approved: Acceptable profile', correct: false }
+                ],
+                hint: "💡 Hint: Credit 680 ≥ 650? Income 35000 ≥ 30000? has_collateral = True? Check kondisi mana yang match pertama.",
+                feedback: {
+                    correct: "✅ Excellent! Credit score 680 ≥ 650, income 35000 ≥ 30000, dan has_collateral = True, jadi masuk kondisi kedua.",
+                    incorrect: "❌ Trace lagi! Age OK (28), credit 680 ≥ 650 ✓, income 35000 ≥ 30000 ✓, has_collateral True ✓. Kondisi kedua yang match!"
+                }
+            }
+        ];
+
+        function loadQuizQuestion(index) {
+            const q = quizQuestions[index - 1];
+
+            document.getElementById('quizTitle').textContent = q.title;
+            document.getElementById('quizProgress').textContent = `Question ${index} of 5`;
+            document.getElementById('quizProgressFill').style.width = `${(index / 5) * 100}%`;
+
+            const container = document.getElementById('quizQuestionContainer');
+            container.innerHTML = `
+        <div class="quiz-question">${q.question}</div>
+        <div class="quiz-code-block">
+          <pre><code class="language-python">${q.code}</code></pre>
+        </div>
+        <div class="quiz-options" id="quizOptions">
+          ${q.options.map((opt, idx) => `
+            <button class="quiz-option" onclick="checkQuizAnswer(${index}, '${String.fromCharCode(65 + idx)}', ${opt.correct})">
+              ${opt.text}
+            </button>
+          `).join('')}
+        </div>
+        <div class="quiz-hint">${q.hint}</div>
+        <div id="quizResultBox" style="display: none;"></div>
+      `;
+
+            if (typeof Prism !== 'undefined') {
+                Prism.highlightAll();
+            }
+
+            // Restore previously saved answer state
+            if (quizAnswers[index - 1]) {
+                const saved = quizAnswers[index - 1];
+                revealAnswerStatus(saved.selected, saved.correct, index);
+            } else {
+                updateQuizNavigation();
+            }
+        }
+
+        function checkQuizAnswer(questionNum, selected, isCorrect) {
+            quizAnswers[questionNum - 1] = { selected, correct: isCorrect };
+
+            if (isCorrect) quizScore++;
+            document.getElementById('liveQuizScore').textContent = quizScore;
+
+            revealAnswerStatus(selected, isCorrect, questionNum);
+        }
+
+        function revealAnswerStatus(selected, isCorrect, questionNum) {
+            const allOptions = document.querySelectorAll('#quizOptions .quiz-option');
+            allOptions.forEach(opt => {
+                opt.disabled = true;
+                if (opt.textContent.trim().startsWith(selected)) {
+                    opt.classList.add(isCorrect ? 'correct' : 'incorrect');
+                } else {
+                    opt.classList.add('not-selected');
+                }
+            });
+
+            const q = quizQuestions[questionNum - 1];
+            const resBox = document.getElementById('quizResultBox');
+            resBox.style.display = 'block';
+
+            if (isCorrect) {
+                resBox.className = 'feedback-box feedback-correct';
+                resBox.innerHTML = q.feedback.correct;
+            } else {
+                resBox.className = 'feedback-box feedback-incorrect';
+                resBox.innerHTML = q.feedback.incorrect;
+            }
+
+            updateQuizNavigation();
+        }
+
+        function updateQuizNavigation() {
+            const prevBtn = document.getElementById('prevQuizBtn');
+            const nextBtn = document.getElementById('nextQuizBtn');
+            const finishBtn = document.getElementById('finishQuizBtn');
+
+            prevBtn.style.display = currentQuizQuestion > 1 ? 'inline-block' : 'none';
+
+            if (currentQuizQuestion === 5) {
+                nextBtn.style.display = 'none';
+                finishBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.style.display = 'inline-block';
+                finishBtn.style.display = 'none';
+            }
+
+            const isAnswered = !!quizAnswers[currentQuizQuestion - 1];
+            nextBtn.disabled = !isAnswered;
+            finishBtn.disabled = !isAnswered;
+        }
+
+        function nextQuizQuestion() {
+            if (currentQuizQuestion < 5) {
+                currentQuizQuestion++;
+                loadQuizQuestion(currentQuizQuestion);
+            }
+        }
+
+        function previousQuizQuestion() {
+            if (currentQuizQuestion > 1) {
+                currentQuizQuestion--;
+                loadQuizQuestion(currentQuizQuestion);
+            }
+        }
+
+        function showQuizResults() {
+            document.getElementById('quizQuestionContainer').style.display = 'none';
+            document.getElementById('quizNavigation').style.display = 'none';
+
+            const percentage = (quizScore / 5) * 100;
+            let msg = '';
+            if (percentage >= 80) {
+                msg = '🌟 Luar biasa! Anda sudah menguasai Complex Decision Making dengan sangat baik!';
+            } else if (percentage >= 60) {
+                msg = '👍 Kerja bagus! Pemahaman logika Anda sudah cukup solid. Terus berlatih!';
+            } else {
+                msg = '💪 Semangat belajar! Pemrograman logika butuh banyak latihan. Coba ulangi kuis lagi.';
+            }
+
+            document.getElementById('finalScoreNumber').textContent = quizScore;
+            document.getElementById('finalScoreMessage').textContent = msg;
+            document.getElementById('quizFinalResults').style.display = 'block';
+        }
+
+        function restartQuiz() {
+            currentQuizQuestion = 1;
+            quizScore = 0;
+            quizAnswers = [];
+
+            document.getElementById('quizFinalResults').style.display = 'none';
+            document.getElementById('quizQuestionContainer').style.display = 'block';
+            document.getElementById('quizNavigation').style.display = 'flex';
+            document.getElementById('liveQuizScore').textContent = '0';
+
+            loadQuizQuestion(1);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadQuizQuestion(1);
+        });
+    </script>
+</body>
+
+</html>

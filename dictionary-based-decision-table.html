@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Keputusan: Dictionary-Based Decision Table</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .flow-line-vertical {
+            background: repeating-linear-gradient(to bottom,
+                    #3b82f6 0%,
+                    #3b82f6 50%,
+                    transparent 50%,
+                    transparent 100%);
+            background-size: 100% 20px;
+            animation: flow-v 1s linear infinite;
+        }
+
+        @keyframes flow-v {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 0 20px;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-white text-slate-800 font-sans min-h-screen flex flex-col items-center justify-center p-6">
+
+    <main class="max-w-4xl w-full border-2 border-slate-200 rounded-xl p-8 bg-white shadow-sm">
+        <header class="text-center mb-8">
+            <h1 class="text-2xl font-extrabold text-slate-900 mb-2">
+                Rekomendasi Program Berbasis Decision Table
+            </h1>
+            <p class="text-slate-600 max-w-xl mx-auto">
+                Tentukan minat dan fasilitas Anda untuk mencari pasangan kunci (Key) yang tepat di dalam Dictionary
+                program kami.
+            </p>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+
+            <div id="cardInterest"
+                class="border-2 border-blue-600 rounded-lg p-4 flex flex-col justify-between transition-all duration-300">
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-1">Kriteria 1: Minat</h3>
+                    <p class="text-sm text-slate-500 mb-4">Pilih bidang teknologi yang ingin ditekuni:</p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button id="btnInterestAI" onclick="setCondition('interest', 'AI')"
+                        class="py-2 px-3 border-2 border-blue-600 bg-blue-600 text-white font-semibold rounded-md text-sm transition hover:bg-blue-700">
+                        Artificial Intelligence (AI)
+                    </button>
+                    <button id="btnInterestWeb" onclick="setCondition('interest', 'Web')"
+                        class="py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        Web Development
+                    </button>
+                    <button id="btnInterestMobile" onclick="setCondition('interest', 'Mobile')"
+                        class="py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        Mobile Development
+                    </button>
+                </div>
+            </div>
+
+            <div id="cardHasLaptop"
+                class="border-2 border-slate-200 rounded-lg p-4 flex flex-col justify-between transition-all duration-300">
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-1">Kriteria 2: Fasilitas</h3>
+                    <p class="text-sm text-slate-500 mb-4">Apakah Anda sudah memiliki laptop?</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="btnLaptopTrue" onclick="setCondition('hasLaptop', true)"
+                        class="flex-1 py-2 px-3 border-2 border-blue-600 bg-blue-600 text-white font-semibold rounded-md text-sm transition hover:bg-blue-700">
+                        Punya
+                    </button>
+                    <button id="btnLaptopFalse" onclick="setCondition('hasLaptop', false)"
+                        class="flex-1 py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        Tidak Punya
+                    </button>
+                </div>
+            </div>
+
+            <div id="cardHasExperience"
+                class="border-2 border-slate-200 rounded-lg p-4 flex flex-col justify-between transition-all duration-300">
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-1">Kriteria 3: Pengalaman</h3>
+                    <p class="text-sm text-slate-500 mb-4">Apakah Anda memiliki pengalaman dasar?</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="btnExperienceTrue" onclick="setCondition('hasExperience', true)"
+                        class="flex-1 py-2 px-3 border-2 border-blue-600 bg-blue-600 text-white font-semibold rounded-md text-sm transition hover:bg-blue-700">
+                        Ada
+                    </button>
+                    <button id="btnExperienceFalse" onclick="setCondition('hasExperience', false)"
+                        class="flex-1 py-2 px-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-md text-sm transition hover:bg-slate-100">
+                        Belum Ada
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section
+            class="flex flex-col items-center justify-center min-h-[380px] bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl p-6 relative overflow-hidden">
+
+            <div id="startNode"
+                class="z-10 bg-white border-2 border-slate-300 px-6 py-3 rounded-lg shadow-sm font-bold text-slate-700 text-center">
+                Input Data Masuk
+            </div>
+
+            <div class="w-0.5 h-8 border-l-2 border-dashed border-slate-300 relative">
+                <div id="flowLine1" class="absolute inset-0 w-full hidden"></div>
+            </div>
+
+            <div id="nodeDictionarySearch"
+                class="z-10 bg-white border-2 border-slate-200 p-5 rounded-xl shadow-sm text-center max-w-md w-full transition-all duration-300">
+                <p class="text-xs font-bold text-blue-600 uppercase mb-2">Dictionary Key Matcher</p>
+                <div
+                    class="inline-block bg-slate-100 border border-slate-300 rounded-md px-3 py-1.5 font-mono text-xs text-slate-600 mb-2">
+                    Key: ("<span id="keyInterestText">AI</span>", <span id="keyLaptopText">true</span>, <span
+                        id="keyExpText">true</span>)
+                </div>
+                <p class="text-slate-800 font-semibold text-sm">
+                    Mencari value yang sesuai di dalam memori program...
+                </p>
+            </div>
+
+            <div class="w-0.5 h-8 border-l-2 border-dashed border-slate-300 relative">
+                <div id="flowLine2" class="absolute inset-0 w-full hidden"></div>
+            </div>
+
+            <div id="finalOutcomeNode"
+                class="z-10 bg-white border-2 border-slate-200 px-6 py-4 rounded-xl shadow-sm text-center max-w-sm w-full transition-all duration-500">
+                <div id="outcomeEmoji" class="text-3xl mb-1">🎯</div>
+                <h4 id="outcomeTitle" class="font-bold text-slate-900 text-base mb-1">Rekomendasi Paket</h4>
+                <p id="outcomeDesc" class="text-xs text-slate-500">Hasil pencarian tabel keputusan muncul di sini.</p>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        const packageProgram = {
+            "AI-true-true": { title: "AI Expert Bootcamp", emoji: "🤖", desc: "Program intensif untuk menjadi spesialis kecerdasan buatan tingkat lanjut." },
+            "AI-true-false": { title: "AI Fundamentals", emoji: "💡", desc: "Kuasai dasar-dasar konsep machine learning dan prompt engineering." },
+            "AI-false-true": { title: "AI Theory Course", emoji: "📚", desc: "Pelajari teori dan matematika di balik algoritma cerdas." },
+            "AI-false-false": { title: "Belum Siap untuk AI", emoji: "⚠️", desc: "Disarankan menguasai dasar komputer dan pemrograman umum terlebih dahulu." },
+
+            "Web-true-true": { title: "Full-Stack Developer", emoji: "🌐", desc: "Jalur lengkap pembuatan aplikasi web dari sisi klien hingga server." },
+            "Web-true-false": { title: "Frontend Specialist", emoji: "🎨", desc: "Fokus pada pengembangan antarmuka visual yang modern dan responsif." },
+            "Web-false-true": { title: "Backend Basics", emoji: "⚙️", desc: "Pelajari manajemen data, API, dan server secara mendalam." },
+            "Web-false-false": { title: "HTML/CSS Starter", emoji: "📄", desc: "Langkah awal memahami pondasi struktur halaman web dasar." },
+
+            "Mobile-true-true": { title: "Mobile App Expert", emoji: "📱", desc: "Program mendalam pembuatan aplikasi mobile berskala besar." },
+            "Mobile-true-false": { title: "Mobile Development", emoji: "🛠️", desc: "Bangun aplikasi mobile fungsional lintas platform (Android/iOS)." },
+            "Mobile-false-true": { title: "App Design Basics", emoji: "✏️", desc: "Pelajari kerangka awal perancangan fungsionalitas aplikasi mobile." },
+            "Mobile-false-false": { title: "Mobile User Experience", emoji: "🧠", desc: "Fokus pada pemahaman psikologi pengguna aplikasi mobile." }
+        };
+
+        const state = {
+            interest: 'AI',
+            hasLaptop: true,
+            hasExperience: true
+        };
+
+        function setCondition(property, value) {
+            state[property] = value;
+            updateUI();
+        }
+
+        function updateUI() {
+            const activeClass = ['border-blue-600', 'bg-blue-600', 'text-white', 'hover:bg-blue-700'];
+            const inactiveClass = ['border-slate-200', 'text-slate-700', 'bg-transparent', 'hover:bg-slate-100'];
+
+            const interestButtons = ['AI', 'Web', 'Mobile'];
+            interestButtons.forEach(type => {
+                const btn = document.getElementById('btnInterest' + type);
+                if (state.interest === type) {
+                    btn.className = "py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + activeClass.join(' ');
+                } else {
+                    btn.className = "py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + inactiveClass.join(' ');
+                }
+            });
+
+            const btnLaptopTrue = document.getElementById('btnLaptopTrue');
+            const btnLaptopFalse = document.getElementById('btnLaptopFalse');
+            if (state.hasLaptop) {
+                btnLaptopTrue.className = "flex-1 py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + activeClass.join(' ');
+                btnLaptopFalse.className = "flex-1 py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + inactiveClass.join(' ');
+            } else {
+                btnLaptopTrue.className = "flex-1 py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + inactiveClass.join(' ');
+                btnLaptopFalse.className = "flex-1 py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + activeClass.join(' ');
+            }
+
+            const btnExperienceTrue = document.getElementById('btnExperienceTrue');
+            const btnExperienceFalse = document.getElementById('btnExperienceFalse');
+            if (state.hasExperience) {
+                btnExperienceTrue.className = "flex-1 py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + activeClass.join(' ');
+                btnExperienceFalse.className = "flex-1 py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + inactiveClass.join(' ');
+            } else {
+                btnExperienceTrue.className = "flex-1 py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + inactiveClass.join(' ');
+                btnExperienceFalse.className = "flex-1 py-2 px-3 border-2 font-semibold rounded-md text-sm transition " + activeClass.join(' ');
+            }
+
+            document.getElementById('keyInterestText').innerText = state.interest;
+            document.getElementById('keyLaptopText').innerText = state.hasLaptop;
+            document.getElementById('keyExpText').innerText = state.hasExperience;
+
+            runFlowAnimation();
+        }
+
+        function runFlowAnimation() {
+            const flowLine1 = document.getElementById('flowLine1');
+            const flowLine2 = document.getElementById('flowLine2');
+            const nodeDictionarySearch = document.getElementById('nodeDictionarySearch');
+            const finalOutcomeNode = document.getElementById('finalOutcomeNode');
+
+            const outcomeEmoji = document.getElementById('outcomeEmoji');
+            const outcomeTitle = document.getElementById('outcomeTitle');
+            const outcomeDesc = document.getElementById('outcomeDesc');
+
+            flowLine1.className = 'absolute inset-0 w-full hidden';
+            flowLine2.className = 'absolute inset-0 w-full hidden';
+
+            nodeDictionarySearch.className = 'z-10 bg-white border-2 border-slate-200 p-5 rounded-xl shadow-sm text-center max-w-md w-full transition-all duration-300';
+            finalOutcomeNode.className = 'z-10 bg-white border-2 border-slate-200 px-6 py-4 rounded-xl shadow-sm text-center max-w-sm w-full transition-all duration-500';
+
+            setTimeout(() => {
+                flowLine1.className = 'absolute inset-0 w-full flow-line-vertical block';
+            }, 50);
+
+            setTimeout(() => {
+                nodeDictionarySearch.classList.add('border-blue-500', 'ring-2', 'ring-blue-100');
+                flowLine2.className = 'absolute inset-0 w-full flow-line-vertical block';
+            }, 350);
+
+            setTimeout(() => {
+                const searchKey = `${state.interest}-${state.hasLaptop}-${state.hasExperience}`;
+                const matchedPackage = packageProgram[searchKey];
+
+                if (matchedPackage) {
+                    outcomeEmoji.innerText = matchedPackage.emoji;
+                    outcomeTitle.innerText = matchedPackage.title;
+                    outcomeDesc.innerText = matchedPackage.desc;
+
+                    finalOutcomeNode.classList.remove('border-slate-200');
+                    if (searchKey.includes('false-false')) {
+                        finalOutcomeNode.classList.add('border-amber-500', 'ring-2', 'ring-amber-100', 'scale-105');
+                    } else {
+                        finalOutcomeNode.classList.add('border-green-500', 'ring-2', 'ring-green-100', 'scale-105');
+                    }
+                }
+            }, 750);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI();
+        });
+    </script>
+</body>
+
+</html>
